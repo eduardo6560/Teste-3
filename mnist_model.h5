@@ -1,0 +1,36 @@
+# app.py (usando Flask)
+from flask import Flask, render_template, request, jsonify
+from keras.models import load_model
+import numpy as np
+from PIL import Image
+import io
+import base64
+
+app = Flask(__name__)
+
+# Carregar o modelo treinado (lembre-se de usar o nome correto do arquivo)
+model = load_model('mnist_model.h5')  # Carregando o modelo treinado
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/predict', methods=['POST'])
+def predict():
+    # Recebe a imagem do front-end (em base64)
+    data = request.form['image']
+    image_data = base64.b64decode(data.split(',')[1])
+    image = Image.open(io.BytesIO(image_data))
+    image = image.convert('L')  # Converter para escala de cinza
+    image = image.resize((28, 28))  # Redimensionar para 28x28
+    image = np.array(image) / 255.0  # Normalizar
+    image = image.reshape(1, 28, 28)  # Adicionar dimensão de lote
+
+    # Prever com o modelo
+    prediction = model.predict(image)
+    predicted_class = np.argmax(prediction)
+
+    return jsonify({'prediction': int(predicted_class)})
+
+if __name__ == '__main__':
+    app.run(debug=True)

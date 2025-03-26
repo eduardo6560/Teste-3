@@ -1,0 +1,32 @@
+# modelo.py (usando Keras)
+from keras.models import Sequential
+from keras.layers import Dense, Flatten
+from keras.datasets import mnist
+from keras.utils import to_categorical
+
+# Carregar o dataset MNIST
+(x_train, y_train), (x_test, y_test) = mnist.load_data()
+
+# Normalizar as imagens
+x_train = x_train / 255.0
+x_test = x_test / 255.0
+
+# One-hot encode dos rótulos
+y_train = to_categorical(y_train, 10)
+y_test = to_categorical(y_test, 10)
+
+# Criar o modelo Keras
+model = Sequential([
+    Flatten(input_shape=(28, 28)),
+    Dense(128, activation='relu'),
+    Dense(10, activation='softmax')
+])
+
+# Compilar o modelo
+model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+
+# Treinar o modelo
+model.fit(x_train, y_train, epochs=5)
+
+# Salvar o modelo treinado com o nome desejado
+model.save('mnist_model.h5')  # Salvar com o nome "mnist_model.h5"
